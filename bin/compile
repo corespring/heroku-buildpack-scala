@@ -25,6 +25,8 @@ curl --silent --location http://heroku-jvm-common.s3.amazonaws.com/jvm-buildpack
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
 
+echo "CI Local Buildpack -------------------------------"
+
 # create default system.properties 
 if [ ! -f ${BUILD_DIR}/system.properties ]; then
   echo "java.runtime.version=1.6" > ${BUILD_DIR}/system.properties
@@ -35,6 +37,10 @@ javaVersion=$(detect_java_version ${BUILD_DIR})
 echo -n "-----> Installing OpenJDK ${javaVersion}..."
 install_java ${BUILD_DIR} ${javaVersion}
 jdk_overlay ${BUILD_DIR}
+chmod a+x "$BUILD_DIR/bin/java"
+chmod a+x "$BUILD_DIR/bin/util"
+export PATH=$(echo $PATH | sed 's_//_/_')
+echo "path: $PATH"
 echo "done"
 
 # home directory from perspective of SBT; we rename
@@ -112,10 +118,20 @@ else
   error "Error, SBT version $SBT_VERSION not supported"
 fi
 
+if [ -n "$credentials_file_path" ]; then
+  echo "copying in the credentials file here $credentials_file_path"
+  mkdir -p "$SBT_USER_HOME_ABSOLUTE/.ivy2/"
+  cp "$credentials_file_path" "$SBT_USER_HOME_ABSOLUTE/.ivy2/.credentials"
+fi
+
 # copy in heroku sbt plugin
 HEROKU_PLUGIN="HerokuPlugin.scala"
 mkdir -p "$SBT_USER_HOME/.sbt/plugins"
 cp -p $OPT_DIR/$HEROKU_PLUGIN $SBT_USER_HOME/.sbt/plugins/$HEROKU_PLUGIN
+
+echo "tests::"
+which java
+echo $PATH
 
 # build app
 echo "-----> Running: sbt $SBT_TASKS"
