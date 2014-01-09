@@ -10,14 +10,14 @@ OPT_DIR=$BP_DIR/opt
 . $BIN_DIR/common
 
 # parse args
-APP_BUILD_DIR=$(cd $1; pwd)
+BUILD_DIR=$(cd $1; pwd)
 CACHE_DIR=$2
 ENV_FILE=$3
 [ -f "$ENV_FILE" ] && export $(grep 'SBT_CLEAN' $ENV_FILE)
 
 # Move app to a static build dir to keep paths the same between builds
-BUILD_DIR="/tmp/scala_buildpack_build_dir"
-mv $APP_BUILD_DIR $BUILD_DIR
+#BUILD_DIR="/tmp/scala_buildpack_build_dir"
+#mv $APP_BUILD_DIR $BUILD_DIR
 
 curl --silent --location http://heroku-jvm-common.s3.amazonaws.com/jvm-buildpack-common.tar.gz | tar xz
 . bin/java
@@ -171,4 +171,4 @@ if is_play $BUILD_DIR ; then
 fi
 
 # Move compiled app back to where Heroku expects it
-mv $BUILD_DIR $APP_BUILD_DIR
+#mv $BUILD_DIR $APP_BUILD_DIR
